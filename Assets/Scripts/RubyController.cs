@@ -3,10 +3,10 @@
 public class RubyController : MonoBehaviour
 {
     public float speed = 3.0f;
-
     public int maxHealth = 5;
-
     public GameObject projectilePrefab;
+    public AudioClip launchSound;
+    public AudioClip hitSound;
 
     public int health { get { return currentHealth; } }
     int currentHealth;
@@ -22,16 +22,16 @@ public class RubyController : MonoBehaviour
     Animator animator;
     Vector2 lookDirection = new Vector2(1, 0);
 
-    // Start is called before the first frame update
+    AudioSource audioSource;
+
     void Start()
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-
         currentHealth = maxHealth;
+        audioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         horizontal = Input.GetAxis("Horizontal");
@@ -61,7 +61,7 @@ public class RubyController : MonoBehaviour
             Launch();
         }
 
-        /*if (Input.GetKeyDown(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
             if (hit.collider != null)
@@ -72,7 +72,7 @@ public class RubyController : MonoBehaviour
                     character.DisplayDialog();
                 }
             }
-        }*/
+        }
     }
 
     void FixedUpdate()
@@ -93,12 +93,13 @@ public class RubyController : MonoBehaviour
 
             isInvincible = true;
             invincibleTimer = timeInvincible;
+            PlaySound(hitSound); // Tocar som de batida
         }
 
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-
         UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
     }
+
     void Launch()
     {
         GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
@@ -107,5 +108,11 @@ public class RubyController : MonoBehaviour
         projectile.Launch(lookDirection, 300);
 
         animator.SetTrigger("Launch");
+        PlaySound(launchSound); // Tocar som de lançamento
+    }
+
+    public void PlaySound(AudioClip clip)
+    {
+        audioSource.PlayOneShot(clip);
     }
 }
